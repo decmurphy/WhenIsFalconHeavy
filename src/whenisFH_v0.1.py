@@ -45,6 +45,7 @@ def authorized():
 def activate():
 
     replied = []
+    already_done = []
 
     # Use all the SQL you like
     cur = db.cursor()
@@ -58,22 +59,25 @@ def activate():
     orig_date = datetime.date(year, month, 1)
     date = orig_date
     one_month = relativedelta(months=1)
-        
+            
     while True:
       try:
-        comments_by_sub = r.get_comments('spacex',limit=10)
+        comments_by_sub = r.get_comments('test',limit=10)
         for comment in comments_by_sub:
             if comment.author is not None:
-                if 'falcon heavy' in comment.body.lower() and comment.id not in replied:
+                if 'falcon heavy' in comment.body.lower() and comment.id not in replied and comment.link_id not in already_done:
                     date = date + one_month
-                    executeQuery = "UPDATE Date SET Year=%d, Month=%d" % (date.year, date.month)
+                    executeQuery = "UPDATE Date SET year=%d, month=%d;" % (date.year, date.month)
+                    print executeQuery
                     cur.execute(executeQuery)
+                    db.commit()
                     new_comment = comment.reply('You mentioned Falcon Heavy. By doing so you have '
-                        'pushed the NET date one month into the future.\n\nThe new '
-                        'NET is {month} {year}.\n---\n^(I am a bot. If you have feedback, please message /u/TheVehicleDestroyer)'
+                        'pushed the NET date one month into the future. The new '
+                        'NET is {month} {year}.\n\n---\n\n^(I am a bot. If you have feedback, please message /u/TheVehicleDestroyer)'
                         .format(month=date.strftime("%B"), year=date.year))
                     replied.append(comment.id)
                     replied.append(new_comment.id)
+                    already_done.append(comment.link_id)
         
       except praw.errors.OAuthInvalidToken:
         

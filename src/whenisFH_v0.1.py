@@ -64,7 +64,7 @@ def activate():
         comments_by_sub = r.get_comments('spacex',limit=10)
         for comment in comments_by_sub:
             if comment.author is not None:
-                if 'falconheavy' in comment.body.lower() and comment.id not in replied:
+                if 'falcon heavy' in comment.body.lower() and comment.id not in replied:
                     date = date + one_month
                     executeQuery = "UPDATE Date SET Year=%d, Month=%d" % (date.year, date.month)
                     cur.execute(executeQuery)

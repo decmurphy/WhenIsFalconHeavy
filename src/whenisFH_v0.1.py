@@ -13,9 +13,9 @@ app = Flask(__name__)
 
 Config = ConfigParser.ConfigParser()
 Config.read('praw.ini')
-CLIENT_ID = Config.get('test','client_id')
-CLIENT_SECRET = Config.get('test','client_secret')
-REDIRECT_URI = Config.get('test','redirect_uri')
+CLIENT_ID = Config.get('prod','client_id')
+CLIENT_SECRET = Config.get('prod','client_secret')
+REDIRECT_URI = Config.get('prod','redirect_uri')
 
 access_information = ''
 
@@ -62,7 +62,7 @@ def activate():
             
     while True:
       try:
-        comments_by_sub = r.get_comments('test',limit=10)
+        comments_by_sub = r.get_comments('spacex',limit=10)
         for comment in comments_by_sub:
             if comment.author is not None:
                 if 'falcon heavy' in comment.body.lower() and comment.id not in replied and comment.link_id not in already_done:

@@ -47,11 +47,9 @@ def activate():
     replied = []
     already_done = []
 
-    # Use all the SQL you like
     cur = db.cursor()
     cur.execute("""SELECT month, year FROM Date;""")
 
-    # print all the first cell of all the rows
     row = cur.fetchone()
     month = row[0]
     year = row[1]
@@ -59,16 +57,16 @@ def activate():
     orig_date = datetime.date(year, month, 1)
     date = orig_date
     one_month = relativedelta(months=1)
-            
+
     while True:
       try:
-        comments_by_sub = r.get_comments('spacex',limit=10)
+        time.sleep(120)
+        comments_by_sub = r.get_comments('spacex',limit=20)
         for comment in comments_by_sub:
             if comment.author is not None:
-                if 'falcon heavy' in comment.body.lower() and comment.id not in replied and comment.link_id not in already_done:
+                if 'falcon heavy' in comment.body.lower() and comment.id not in replied:
                     date = date + one_month
                     executeQuery = "UPDATE Date SET year=%d, month=%d;" % (date.year, date.month)
-                    print executeQuery
                     cur.execute(executeQuery)
                     db.commit()
                     new_comment = comment.reply('You mentioned Falcon Heavy. By doing so you have '
@@ -77,13 +75,14 @@ def activate():
                         .format(month=date.strftime("%B"), year=date.year))
                     replied.append(comment.id)
                     replied.append(new_comment.id)
-                    already_done.append(comment.link_id)
         
       except praw.errors.OAuthInvalidToken:
         
-        print 'Refreshing token...'
         access_information = r.refresh_access_information(access_information['refresh_token'])
-        print 'Token refreshed'
+
+      except praw.errors.RateLimitExceeded:
+
+        print 'caught RateLimitExceeded error'
 
     return "Activation finished"
 
@@ -92,4 +91,4 @@ if __name__ == '__main__':
     
     r = praw.Reddit('Date counter app by /u/WhenIsFalconHeavy v1.0')
     r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0')
